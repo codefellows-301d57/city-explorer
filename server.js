@@ -75,7 +75,6 @@ function Weather(weatherData){
   let time = new Date(weatherData.time * 1000).toDateString();
   this.forecast = weatherData.summary;
   this.time = time;
-  
 }
 
 
