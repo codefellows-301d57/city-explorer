@@ -11,7 +11,7 @@ const express = require('express');
 const cors = require('cors');
 
 // Global vars
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3009;
 
 // Make my server
 const app = express();
@@ -48,13 +48,13 @@ app.use('*', (request, response) => {
   response.send('you got to the wrong place');
 })
 
-function searchToLatLng (locationName){
+function searchToLatLng(locationName){
   const geoData = require('./data/geo.json');
   const location = new Location(locationName, geoData);
   return location;
 }
 
-function searchWeather (){
+function searchWeather(){
   let weatherArr = [];
   const weatherData = require('./data/darksky.json');
   weatherData.daily.data.forEach(dailyWeather => {
@@ -64,15 +64,15 @@ function searchWeather (){
   return weatherArr;
 }
 
-function Location (query, geoData) {
+function Location(query, geoData){
   this.search_query = query;
   this.formatted_query = geoData.results[0].formatted_address,
   this.latitude = geoData.results[0].geometry.location.lat,
   this.longitude = geoData.results[0].geometry.location.lng
 }
 
-function Weather (weatherData) {
-  let time = new Date(weatherData.time).toString().split('').slice(0, 15).join('');
+function Weather(weatherData){
+  let time = new Date(weatherData.time * 1000).toDateString();
   this.forecast = weatherData.summary;
   this.time = time;
   
