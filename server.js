@@ -11,7 +11,7 @@ const express = require('express');
 const cors = require('cors');
 
 // Global vars
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 
 // Make my server
 const app = express();
@@ -27,7 +27,7 @@ $.ajax({
 
 // app.get('/location') is a route
 app.get('/location', (request, response) => {
-  // response.send('hello world you are on the location path');
+  response.send('hello world you are on the location path');
   console.log(request.query.data);
   try {
     const locationData = searchToLatLng(request.query.data);
