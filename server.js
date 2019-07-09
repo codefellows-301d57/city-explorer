@@ -53,6 +53,4 @@ function searchToLatLng (locationName){
 }
 
 // Start the server
-app.listen(PORT, () => {
-  console.log(`app is up on port ${PORT}`)
-})
+app.listen(PORT, () => console.log(`app is up on port ${PORT}`));
