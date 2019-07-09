@@ -11,7 +11,7 @@ const express = require('express');
 const cors = require('cors');
 
 // Global vars
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3009;
 
 // Make my server
 const app = express();
@@ -38,7 +38,18 @@ app.get('/location', (request, response) => {
 app.get('/weather', (request, response) => {
   try {
     const weatherData = searchWeather();
-    response.send(weatherData);
+    // response.send(weatherData);
+    response.send([
+      {
+        'forecast': 'Partly cloudy until afternoon.',
+        'time': 'Mon Jan 01 2001'
+      },
+      {
+        'forecast': 'Mostly cloudy in the morning.',
+        'time': 'Tue Jan 02 2001'
+      },
+
+    ])
   } catch(e) {
     response.status(500).send('Status 500: Sorry, something went wrong when getting this weather data');
   }
@@ -72,10 +83,10 @@ function Location (query, geoData) {
 }
 
 function Weather (weatherData) {
-  let time = new Date(weatherData.time).toString().split('').slice(0, 15).join('');
+  let time = new Date(weatherData.time * 1000).toDateString();
   this.forecast = weatherData.summary;
   this.time = time;
-  
+
 }
 
 
