@@ -27,8 +27,6 @@ $.ajax({
 
 // app.get('/location') is a route
 app.get('/location', (request, response) => {
-  response.send('hello world you are on the location path');
-  console.log(request.query.data);
   try {
     const locationData = searchToLatLng(request.query.data);
     response.send(locationData);
