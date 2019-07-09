@@ -1,5 +1,4 @@
-# lab-06
-city explorer
+# City Explorer
 
 **Author**: Nicholas Paro
 
