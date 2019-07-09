@@ -5,19 +5,33 @@ city explorer
 **Version**: 1.0.0 (increment the patch/fix version number if you make more commits past your first submission)
 
 ## Overview
-<!-- Provide a high level overview of what this application is and why you are building it, beyond the fact that it's an assignment for this class. (i.e. What's your problem domain?) -->
+This application allows a user to search a specific location and retrieve a map, weather, events, movies, and yelp reviews from that location.
 
 ## Getting Started
-<!-- What are the steps that a user must take in order to build this app on their own machine and get it running? -->
+Git clone and npm install for the application dependencies.
 
 ## Architecture
-<!-- Provide a detailed description of the application design. What technologies (languages, libraries, etc) you're using, and any other relevant design information. -->
+Tehcnologies: JavaScript, Node.js, Express, dotenv, CORS, GitHub, Heroku
+APIs: Darksky, Google Maps geodata
 
 ## Change Log
-<!-- Use this area to document the iterative changes made to your application as each feature is successfully implemented. Use time stamps. Here's an examples:
+* Number and name of feature: Feature 1 Location
+* Estimate of time needed to complete: 30 min
+* Start time: 9:50am
+* Finish time: 11:00am
+* Actual time needed to complete: 1 hour 10 min
 
-01-01-2001 4:59pm - Application now has a fully-functional express server, with a GET route for the location resource.
+* Number and name of feature: Feature 2 Weather
+* Estimate of time needed to complete: 30 min
+* Start time: 11:00am
+* Finish time: 11:30am
+* Actual time needed to complete: 30 min
+
+* Number and name of feature: Feature 3 Location
+* Estimate of time needed to complete: 30 min
+* Start time: 11:30am
+* Finish time: 11:45am
+* Actual time needed to complete: 15 min
 
 ## Credits and Collaborations
-<!-- Give credit (and a link) to other people or resources that helped you build this application. -->
--->
+* Day 1: Nhu Trinh

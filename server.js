@@ -31,7 +31,16 @@ app.get('/location', (request, response) => {
     const locationData = searchToLatLng(request.query.data);
     response.send(locationData);
   } catch(e){
-    response.status(500).send('Status 500: So sorry i broke')
+    response.status(500).send('Status 500: Sorry, something went wrong when getting this location')
+  }
+})
+
+app.get('/weather', (request, response) => {
+  try {
+    const weatherData = searchWeather();
+    response.send(weatherData);
+  } catch(e) {
+    response.status(500).send('Status 500: Sorry, something went wrong when getting this weather data');
   }
 })
 
@@ -41,14 +50,34 @@ app.use('*', (request, response) => {
 
 function searchToLatLng (locationName){
   const geoData = require('./data/geo.json');
-  const location = {
-    search_query: locationName,
-    formatted_query: geoData.results[0].formatted_address,
-    latitude: geoData.results[0].geometry.location.lat,
-    longitude: geoData.results[0].geometry.location.lng,
-  }
+  const location = new Location(locationName, geoData);
   return location;
 }
+
+function searchWeather (){
+  let weatherArr = [];
+  const weatherData = require('./data/darksky.json');
+  weatherData.daily.data.forEach(dailyWeather => {
+    const weather = new Weather(dailyWeather);
+    weatherArr.push(weather);
+  })
+  return weatherArr;
+}
+
+function Location (query, geoData) {
+  this.search_query = query;
+  this.formatted_query = geoData.results[0].formatted_address,
+  this.latitude = geoData.results[0].geometry.location.lat,
+  this.longitude = geoData.results[0].geometry.location.lng
+}
+
+function Weather (weatherData) {
+  let time = new Date(weatherData.time).toString().split('').slice(0, 15).join('');
+  this.forecast = weatherData.summary;
+  this.time = time;
+  
+}
+
 
 // Start the server
 app.listen(PORT, () => console.log(`app is up on port ${PORT}`));
