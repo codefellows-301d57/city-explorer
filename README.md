@@ -15,18 +15,21 @@ Tehcnologies: JavaScript, Node.js, Express, dotenv, CORS, GitHub, Heroku
 APIs: Darksky, Google Maps geodata
 
 ## Change Log
+#### Feature 1
 * Number and name of feature: Feature 1 Location
 * Estimate of time needed to complete: 30 min
 * Start time: 9:50am
 * Finish time: 11:00am
 * Actual time needed to complete: 1 hour 10 min
 
+#### Feature 2
 * Number and name of feature: Feature 2 Weather
 * Estimate of time needed to complete: 30 min
 * Start time: 11:00am
 * Finish time: 11:30am
 * Actual time needed to complete: 30 min
 
+#### Feature 3
 * Number and name of feature: Feature 3 Location
 * Estimate of time needed to complete: 30 min
 * Start time: 11:30am

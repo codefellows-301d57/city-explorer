@@ -1,9 +1,5 @@
 'use strict';
 
-// first run npm init from the terminal to create "package.json"
-// `npm install dotenv` installs the dotenv module into the node module folder
-// loads our environment from a secret .env file
-
 // APP dependencies
 require('dotenv').config();
 
@@ -76,7 +72,6 @@ function Weather(weatherData){
   this.forecast = weatherData.summary;
   this.time = time;
 }
-
 
 // Start the server
 app.listen(PORT, () => console.log(`app is up on port ${PORT}`));
