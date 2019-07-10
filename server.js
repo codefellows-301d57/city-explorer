@@ -38,9 +38,9 @@ function searchToWeather(request, response){
   const url = `https://api.darksky.net/forecast/${process.env.WEATHER_API_KEY}/${weatherData.latitude},${weatherData.latitude}`;
   const weatherArr = [];
   superagent.get(url)
-  .then( result => {
-    result.body.daily.data.map(dailyWeather => weatherArr.push(new Weather(dailyWeather)));
-    response.send(weatherArr);
+    .then( result => {
+      result.body.daily.data.map(dailyWeather => weatherArr.push(new Weather(dailyWeather)));
+      response.send(weatherArr);
     }).catch(e => {
       console.error(e);
       response.status(500).send(`Status 500: Sorry, something went wrong when getting the weather data for ${weatherData.formatted_query}`)
