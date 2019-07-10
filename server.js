@@ -5,70 +5,57 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
+const superagent = require('superagent');
 
 // Global vars
 const PORT = process.env.PORT || 3009;
 
-// Make my server
+// Makes the server
 const app = express();
 app.use(cors());
 
-/*
-$.ajax({
-    url: `localhost:3000/location`,
-    method: 'GET',
-    data: { data: searchQuery }
-  })
-*/
+// app.get('/location', <function-reference>) is a route
+app.get('/location', searchToLatLng);
+app.get('/weather', searchToWeather);
 
-// app.get('/location') is a route
-app.get('/location', (request, response) => {
-  try {
-    const locationData = searchToLatLng(request.query.data);
-    response.send(locationData);
-  } catch(e){
-    response.status(500).send('Status 500: Sorry, something went wrong when getting this location')
-  }
-})
+app.use('*', (request, response) => response.send('you got to the wrong place'));
 
-app.get('/weather', (request, response) => {
-  try {
-    const weatherData = searchWeather();
-    response.send(weatherData);
-  } catch(e) {
-    response.status(500).send('Status 500: Sorry, something went wrong when getting this weather data');
-  }
-})
-
-app.use('*', (request, response) => {
-  response.send('you got to the wrong place');
-})
-
-function searchToLatLng(locationName){
-  const geoData = require('./data/geo.json');
-  const location = new Location(locationName, geoData);
-  return location;
+function searchToLatLng(request, response){
+  const locationName = request.query.data;
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${locationName}&key=${process.env.GEOCODE_API_KEY}`;
+  superagent.get(url)
+    .then( result => {
+      const location = new Location(locationName, result);
+      response.send(location);
+    }).catch(e => {
+      console.error(e);
+      response.status(500).send(`Status 500: Sorry, something went wrong when getting ${locationName.formatted_query}`);
+    });
 }
 
-function searchWeather(){
-  let weatherArr = [];
-  const weatherData = require('./data/darksky.json');
-  weatherData.daily.data.forEach(dailyWeather => {
-    const weather = new Weather(dailyWeather);
-    weatherArr.push(weather);
-  })
-  return weatherArr;
+function searchToWeather(request, response){
+  const weatherData = request.query.data;
+  const url = `https://api.darksky.net/forecast/${process.env.WEATHER_API_KEY}/${weatherData.latitude},${weatherData.latitude}`;
+  const weatherArr = [];
+  superagent.get(url)
+  .then( result => {
+    result.body.daily.data.map(dailyWeather => weatherArr.push(new Weather(dailyWeather)));
+    response.send(weatherArr);
+    }).catch(e => {
+      console.error(e);
+      response.status(500).send(`Status 500: Sorry, something went wrong when getting the weather data for ${weatherData.formatted_query}`)
+    });
 }
 
-function Location(query, geoData){
+function Location(query, result){
   this.search_query = query;
-  this.formatted_query = geoData.results[0].formatted_address,
-  this.latitude = geoData.results[0].geometry.location.lat,
-  this.longitude = geoData.results[0].geometry.location.lng
+  this.formatted_query = result.body.results[0].formatted_address,
+  this.latitude = result.body.results[0].geometry.location.lat,
+  this.longitude = result.body.results[0].geometry.location.lng
 }
 
 function Weather(weatherData){
-  let time = new Date(weatherData.time * 1000).toDateString();
+  const time = new Date(weatherData.time * 1000).toDateString();
   this.forecast = weatherData.summary;
   this.time = time;
 }
