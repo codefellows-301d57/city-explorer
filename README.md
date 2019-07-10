@@ -1,8 +1,8 @@
-# lab-06
-city explorer
+# City Explorer
 
 **Author**: Nicholas Paro and Promila Tamang
-**Version**: 1.0.0 (increment the patch/fix version number if you make more commits past your first submission)
+
+**Version**: 1.1.0\ (increment the patch/fix version number if you make more commits past your first submission)
 
 ## Overview
 This application allows a user to search a specific location and retrieve a map, weather, events, movies, and yelp reviews from that location.
@@ -68,4 +68,4 @@ APIs: Darksky, Google Maps geocode, Eventbrite
 
 ## Credits and Collaborations
 * Day 1: Nicholas Paro & Nhu Trinh
-* Day 2: Nicholas Paro & Promila Tamang - additional credit for Trevor Dobson
+* Day 2: Nicholas Paro & Promila Tamang - additional credit for Trevor Dobson and Nhu Trinh
