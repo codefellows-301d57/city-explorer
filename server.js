@@ -133,8 +133,7 @@ function searchToEvents(request, response){
               superagent.get(url)
                 .then( result => {
                   // console.log(result.body.events);
-                  result.body.events.map(events => {
-                    eventArr.push(new Event(events))});
+                  result.body.events.map(events => eventArr.push(new Event(events)));
                   eventArr.forEach(value => {
                     client.query(
                       `INSERT INTO events (
