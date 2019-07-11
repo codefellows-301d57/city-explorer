@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS weathers;
+DROP TABLE IF EXISTS events;
 DROP TABLE IF EXISTS locations;
 
 CREATE TABLE locations (
@@ -17,6 +18,16 @@ CREATE TABLE weathers (
   FOREIGN KEY (location_id) REFERENCES locations (id)
 );
 
+-- TODO: create events table
+CREATE TABLE events (
+  id SERIAL PRIMARY KEY,
+  link TEXT,
+  name TEXT,
+  event_date TEXT,
+  summary TEXT,
+  location_id INTEGER NOT NULL,
+  FOREIGN KEY (location_id) REFERENCES locations (id)
+);
 
 -- FOR HEROKU
 -- git push heroku master (like normal)
