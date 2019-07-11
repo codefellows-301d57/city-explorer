@@ -116,17 +116,21 @@ function searchToEvents(request, response){
   const eventArr = [];
 
   client.query(`SELECT * FROM locations WHERE search_query=$1`, [eventsData])
-    .then(sqlResult => {
-      if(sqlResult.rowCount === 0){
+    .then(locationSqlResult => {
+      if(locationSqlResult.rowCount === 0){
         superagent.get(url)
           .then(result => {
             result.body.events.map(event => eventArr.push(new Event(event)));
             response.send(eventArr);
           })
       } else {
-        const locationId = sqlResult.rows[0].id;
+        const locationId = locationSqlResult.rows[0].id;
         client.query(`SELECT * FROM events WHERE location_id=$1`, [locationId])
           .then(eventResult => {
+
+            console.log(typeof eventResult.rows[0].summary);
+
+
             if(eventResult.rowCount === 0){
               //Get the data from API
               console.log('getting new data from API')
@@ -151,7 +155,7 @@ function searchToEvents(request, response){
             } else {
               //Get data from database
               console.log('sending from DB')
-              response.send(sqlResult.rows[0]);
+              response.send(eventResult.rows);
             }
           });
       }
