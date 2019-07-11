@@ -1,6 +1,6 @@
 # City Explorer
 
-**Author**: Nicholas Paro and Promila Tamang
+**Author**: Nicholas, Sapana, and Roman
 
 **Version**: 1.1.0
 
@@ -69,3 +69,30 @@ APIs: Google Maps Geocode, Dark Sky, and Eventbrite
 ## Credits and Collaborations
 * Day 1: Nicholas Paro & Nhu Trinh
 * Day 2: Nicholas Paro & Promila Tamang - additional credit for Trevor Dobson and Nhu Trinh
+
+##lab-08 -11 July 2019
+####Feature 1 
+* Number and name of feature: Database
+* Estimate of time needed to complete: 30 min
+* Start time: 9:00am
+* Finish time: 09:30am
+* Actual time needed to complete: 30 min
+
+### Feature 2 
+* Number and name of feature: Server
+* Estimate of time needed to complete: 2 hr
+* Start time: 10:30am
+* Finish time: 01:30pm
+* Actual time needed to complete: 3 hr
+
+### Feature 3
+* Number and name of feature: Deploy
+* Estimate of time needed to complete: 30 min
+* Start time: 01:40pm
+* Finish time: 01:50pm
+* Actual time needed to complete: 10 min
+
+## Credits and Collaborations 
+* Day 1: Nicholas Paro & Nhu Trinh
+* Day 2: Nicholas Paro & Promila Tamang - additional credit for Trevor Dobson and Nhu Trinh
+* Day 3: Nicholas Paro, Roman Gebrehiwot, & Sapana Poudel
