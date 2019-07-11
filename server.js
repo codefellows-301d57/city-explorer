@@ -5,9 +5,15 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const superagent = require('superagent');
+const pg = require('pg');
 
 // Global vars
 const PORT = process.env.PORT || 3009;
+
+// PostgreSQL setup
+const client = new pg.Client(process.env.DATABASE_URL);
+client.connect();
+client.on('error', e => console.error(e));
 
 // Makes the server
 const app = express();
@@ -23,23 +29,42 @@ app.use('*', (request, response) => response.send('you got to the wrong place'))
 function searchToLatLng(request, response){
   const locationName = request.query.data;
   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${locationName}&key=${process.env.GEOCODE_API_KEY}`;
-  superagent.get(url)
-    .then( result => {
-      const location = new Location(locationName, result);
-      response.send(location);
-    }).catch(e => {
-      errors(response, e, locationName);
+
+  client.query(`SELECT * FROM locations WHERE search_query=$1`, [locationName])
+    .then(sqlResult => {
+      if(sqlResult.rowCount === 0){
+        console.log('getting new data from API')
+        superagent.get(url)
+          .then( result => {
+            const location = new Location(locationName, result);
+            client.query(
+              `INSERT INTO locations (
+              search_query,
+              formatted_query,
+              latitude,
+              longitude
+              ) VALUES ($1, $2, $3, $4)`,
+              [location.search_query, location.formatted_query, location.latitude, location.longitude]
+            )
+            response.send(location);
+          }).catch(e => {
+            errors(response, e, locationName);
+          });
+      } else {
+        console.log('sending from DB')
+        response.send(sqlResult.rows[0]);
+      }
     });
 }
 
 function searchToWeather(request, response){
   const weatherData = request.query.data;
-  // console.log(weatherData);
   const url = `https://api.darksky.net/forecast/${process.env.WEATHER_API_KEY}/${weatherData.latitude},${weatherData.latitude}`;
   const weatherArr = [];
   superagent.get(url)
     .then( result => {
       result.body.daily.data.map(dailyWeather => weatherArr.push(new Weather(dailyWeather)));
+
       response.send(weatherArr);
     }).catch(e => {
       errors(response, e, weatherData);
@@ -53,6 +78,7 @@ function searchToEvents(request, response){
   superagent.get(url)
     .then( result => {
       result.body.events.map(event => eventArr.push(new Event(event)));
+
       response.send(eventArr);
     })
     .catch(e => {
