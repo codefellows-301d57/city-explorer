@@ -66,7 +66,7 @@ APIs: Google Maps Geocode, Dark Sky, and Eventbrite
 * Finish time: 11:30am
 * Actual time needed to complete: 45 min
 
-### lab-08 - 11 July 2019
+### Lab-08 - 11 July 2019
 #### Feature 1 
 * Number and name of feature: Database
 * Estimate of time needed to complete: 30 min
