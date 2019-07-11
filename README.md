@@ -70,7 +70,7 @@ APIs: Google Maps Geocode, Dark Sky, and Eventbrite
 * Day 1: Nicholas Paro & Nhu Trinh
 * Day 2: Nicholas Paro & Promila Tamang - additional credit for Trevor Dobson and Nhu Trinh
 
-##lab-08 -11 July 2019
+### lab-08 - 11 July 2019
 ####Feature 1 
 * Number and name of feature: Database
 * Estimate of time needed to complete: 30 min
@@ -95,4 +95,4 @@ APIs: Google Maps Geocode, Dark Sky, and Eventbrite
 ## Credits and Collaborations 
 * Day 1: Nicholas Paro & Nhu Trinh
 * Day 2: Nicholas Paro & Promila Tamang - additional credit for Trevor Dobson and Nhu Trinh
-* Day 3: Nicholas Paro, Roman Gebrehiwot, & Sapana Poudel
+* Day 3: Nicholas Paro, Roman Gebrehiwot, & Sapana Poudel - additional credit for Nhu Trinh, Promila Tamang, Trevor Dobson, Peter Lee, Jackie Ly, Manish KC, Kevin Couture, Fabian Brooks, Renee Messick 
