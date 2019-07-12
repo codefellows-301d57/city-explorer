@@ -224,7 +224,7 @@ function querySpecifiedTable(dbToSelect, locationId, Obj, rower, url, queryFunct
             queryFunction(result, Obj, response, pathMapper, arr, locationId, tableClientQuery, time);
           })
       } else {
-        console.log('sending the data from DB');
+        console.log(`sending the data from ${tableQueried} DB`);
         response.send(res[rower]);
       }
     })
@@ -240,7 +240,7 @@ function timeQuery(tableQueried, locationId){
         let timeDifference = currentTime - nowFromDb;
         timeDifference = timeDifference / 60000;
         if(timeDifference > 1){
-          console.log('deleted rows from tables after 1 minute check');
+          console.log(`deleted rows from ${tableQueried} table after 1 minute check`);
           client.query(`DELETE FROM ${tableQueried} WHERE location_id=${locationId}`);
         }
       }
