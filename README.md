@@ -1,8 +1,8 @@
 # City Explorer
 
-**Author**: Nicholas, Sapana, and Roman
+**Author**: Nicholas and Manish
 
-**Version**: 1.3.1
+**Version**: 1.4.1
 
 ## Overview
 This application allows a user to search a specific location and retrieve a map, weather, events, movies, and yelp reviews from that location based on the locations latitude and longitude.
@@ -91,31 +91,31 @@ APIs: Google Maps Geocode, Dark Sky, Eventbrite, Movie, Yelp, and Hiking Project
 ### Lab-09 - 12 July 2019
 #### Feature 1 
 * Number and name of feature: Movies
-* Estimate of time needed to complete: ____
-* Start time: ____
-* Finish time: ____
-* Actual time needed to complete: ____
+* Estimate of time needed to complete: 30 min
+* Start time: 9:00am
+* Finish time: 9:30am
+* Actual time needed to complete: 30 min
 
 #### Feature 2 
 * Number and name of feature: Yelp
-* Estimate of time needed to complete: ____
-* Start time: ____
-* Finish time: ____
-* Actual time needed to complete: ____
+* Estimate of time needed to complete: 1 hour
+* Start time: 9:30am
+* Finish time: 10:30am
+* Actual time needed to complete: 1 hour
 
 #### Feature 3
 * Number and name of feature: Cache Validation
-* Estimate of time needed to complete: ____
-* Start time: ____
-* Finish time: ____
-* Actual time needed to complete: ____
+* Estimate of time needed to complete: 2 hours
+* Start time: 11:00am
+* Finish time: 1:00pm
+* Actual time needed to complete: 2 hours
 
 #### Feature 4
 * Number and name of feature: Trails
-* Estimate of time needed to complete: ____
-* Start time: ____
-* Finish time: ____
-* Actual time needed to complete: ____
+* Estimate of time needed to complete: 30 min
+* Start time: 10:30am
+* Finish time: 11:00am
+* Actual time needed to complete: 30 min
 
 ## Credits and Collaborations 
 * Day 1: Nicholas Paro & Nhu Trinh
