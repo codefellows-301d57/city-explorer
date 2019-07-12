@@ -1,6 +1,6 @@
 # City Explorer
 
-**Author**: Nicholas and Manish
+**Author**: Nicholas, Sapana, and Roman
 
 **Version**: 1.3.1
 
