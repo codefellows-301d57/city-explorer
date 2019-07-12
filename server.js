@@ -38,8 +38,6 @@ const eventDbSelect = `SELECT * FROM events WHERE location_id=$1`;
 const movieDbSelect = `SELECT * FROM movies WHERE location_id=$1`;
 const hikeDbSelect = `SELECT * FROM hikes WHERE location_id=$1`;
 
-// const timeSelector = `SELECT created_at FROM weathers WHERE location_id=$1`, [locationId];
-
 //Table Client Query
 function locationClientQuery(location, response){
   client.query(
@@ -218,11 +216,8 @@ function clientQuery(requestData, dbToSelect, url, arr, queryFunction, pathMappe
 function querySpecifiedTable(dbToSelect, locationId, Obj, rower, url, queryFunction, response, pathMapper, arr, tableClientQuery, tableQueried, time, authVar=''){
   client.query(dbToSelect, [locationId])
     .then(res => {
-      const timeDifference = timeQuery(tableQueried, locationId);
-      // if(){
-      // }
-      if(timeDifference > 1 || res.rowCount === 0){
-        client.query(`DELETE FROM ${tableQueried} WHERE location_id=${locationId}`);
+      timeQuery(tableQueried, locationId);
+      if(res.rowCount === 0){
         console.log('getting the data from API', url);
         superagent.get(url).set('Authorization', authVar)
           .then(result => {
@@ -240,13 +235,14 @@ function timeQuery(tableQueried, locationId){
     .then(res => {
       let nowFromDb;
       const currentTime = Date.now();
-      console.log(currentTime);
       if(res.rows.length !== 0){
         nowFromDb = parseInt(Object.values(res.rows[0]));
-        console.log(nowFromDb);
         let timeDifference = currentTime - nowFromDb;
         timeDifference = timeDifference / 60000;
-        return timeDifference;
+        if(timeDifference > 1){
+          console.log('deleted rows from tables after 1 minute check');
+          client.query(`DELETE FROM ${tableQueried} WHERE location_id=${locationId}`);
+        }
       }
     })
 }
