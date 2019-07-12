@@ -26,37 +26,113 @@ app.get('/events', searchToEvents);
 // app.get('/hikes', searchToHikes);
 app.use('*', (request, response) => response.send('you got to the wrong place'));
 
+//DB creators
+const locationDbSelect = `SELECT * FROM locations WHERE search_query=$1`;
+function locationClientQuery(location, response){
+  client.query(
+    `INSERT INTO locations (
+      search_query,
+      formatted_query,
+      latitude,
+      longitude
+    ) VALUES ($1, $2, $3, $4)`,
+    [location.search_query, location.formatted_query, location.latitude, location.longitude]
+  );
+  response.send(location);
+}
+
+const weatherDbSelect = `SELECT * FROM weathers WHERE location_id=$1`;
+function weatherMapper(result){
+  return result.body.daily.data;
+}
+function weatherClientQuery(value, locationId){
+  client.query(
+    `INSERT INTO weathers (
+      forecast,
+      time,
+      location_id
+    ) VALUES ($1, $2, $3)`,
+    [value.forecast, value.time, locationId]
+  );
+}
+
+const eventDbSelect = `SELECT * FROM events WHERE location_id=$1`;
+function eventMapper(result){
+  return result.body.events;
+}
+function eventClientQuery(value, locationId){
+  client.query(
+    `INSERT INTO events (
+      link,
+      name,
+      event_date,
+      summary,
+      location_id
+    ) VALUES ($1, $2, $3, $4, $5)`,
+    [value.link, value.name, value.event_date, value.summary, locationId]
+  );
+}
+
+function clientQuery(requestData, dbToSelect, url, arr, querier, mapper, interalQuery, Obj, response, rower){
+  client.query(`SELECT * FROM locations WHERE search_query=$1`, [requestData])
+    .then(sqlResult => {
+      const locationId = sqlResult.rows[0].id;
+      interiorClientQuery(dbToSelect, locationId, Obj, rower, url, querier, requestData, response, mapper, arr, interalQuery);
+    }).catch(e => {
+      errors(response, e, requestData);
+    });
+}
+
+function interiorClientQuery(dbToSelect, locationId, Obj, rower, url, querier, requestData, response, mapper, arr, internalQuery){
+  client.query(dbToSelect, [locationId])
+    .then(res => {
+      if(res.rowCount === 0){
+        console.log('getting the data from API');
+        superagent.get(url)
+          .then(result => {
+            querier(result, Obj, response, mapper, arr, locationId, internalQuery);
+          })
+      } else {
+        console.log('sending the data from DB');
+        response.send(res[rower]);
+      }
+    }).catch(e => {
+      errors(response, e, requestData);
+    });
+}
+
+function queryFunc(result, Obj, response, mapper, arr, locationId, querier){
+  mapper(result).map(finalRes => arr.push(new Obj(finalRes)));
+  arr.forEach(value => {
+    querier(value, locationId)
+  })
+  response.send(arr);
+}
+
 // Response builders
 function searchToLatLng(request, response){
   const locationName = request.query.data;
   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${locationName}&key=${process.env.GEOCODE_API_KEY}`;
 
-  client.query(`SELECT * FROM locations WHERE search_query=$1`, [locationName])
+  // interiorClientQuery(locationDbSelect, locationName, Location, 'rows[0]', url, queryFunc, locationName, response);
+
+  client.query(locationDbSelect, [locationName])
     .then(sqlResult => {
       if(sqlResult.rowCount === 0){
-        //Get the data from API
-        console.log('getting new data from API')
+        //Get the location data from API
+        console.log('getting the data from API')
         superagent.get(url)
           .then( result => {
             const location = new Location(locationName, result);
-            client.query(
-              `INSERT INTO locations (
-              search_query,
-              formatted_query,
-              latitude,
-              longitude
-              ) VALUES ($1, $2, $3, $4)`,
-              [location.search_query, location.formatted_query, location.latitude, location.longitude]
-            );
-            response.send(location);
-          }).catch(e => {
-            errors(response, e, locationName);
-          });
+            locationClientQuery(location, response);
+          })
       } else {
-        //Get data from database
-        console.log('sending from DB')
+        //Get the location data from DB
+        console.log('sending the data from DB')
         response.send(sqlResult.rows[0]);
       }
+    }).catch(e => {
+      errors(response, e, locationName);
     });
 }
 
@@ -65,48 +141,7 @@ function searchToWeather(request, response){
   const weatherData = request.query.data.search_query;
   const url = `https://api.darksky.net/forecast/${process.env.WEATHER_API_KEY}/${locationName.latitude},${locationName.longitude}`;
   const weatherArr = [];
-
-  client.query(`SELECT * FROM locations WHERE search_query=$1`, [weatherData])
-    .then(sqlResult => {
-      if(sqlResult.rowCount === 0){
-        console.log('/weather if no row', sqlResult.rowCount);
-        superagent.get(url)
-          .then(result => {
-            result.body.daily.data.map(dailyWeather => weatherArr.push(new Weather(dailyWeather)));
-            response.send(weatherArr);
-          })
-      } else {
-        const locationId = sqlResult.rows[0].id;
-        client.query(`SELECT * FROM weathers WHERE location_id=$1`, [locationId])
-          .then(weatherResult => {
-            if(weatherResult.rowCount === 0){
-              //Get the data from API
-              console.log('getting new data from API')
-              superagent.get(url)
-                .then( result => {
-                  result.body.daily.data.map(dailyWeather => weatherArr.push(new Weather(dailyWeather)));
-                  weatherArr.forEach(value => {
-                    client.query(
-                      `INSERT INTO weathers (
-                      forecast,
-                      time,
-                      location_id
-                      ) VALUES ($1, $2, $3)`,
-                      [value.forecast, value.time, locationId]
-                    );
-                  })
-                  response.send(weatherArr);
-                });
-            } else {
-              //Get data from database
-              console.log('sending from DB')
-              response.send(sqlResult.rows[0]);
-            }
-          });
-      }
-    }).catch(e => {
-      errors(response, e, weatherData);
-    });
+  clientQuery(weatherData, weatherDbSelect, url, weatherArr, queryFunc, weatherMapper, weatherClientQuery, Weather, response, 'rows');
 }
 
 function searchToEvents(request, response){
@@ -114,50 +149,7 @@ function searchToEvents(request, response){
   const eventsData = request.query.data.search_query;
   const url = `https://www.eventbriteapi.com/v3/events/search/?location.latitude=${locationName.latitude}&location.longitude=${locationName.longitude}&token=${process.env.EVENTBRITE_API_KEY}`;
   const eventArr = [];
-
-  client.query(`SELECT * FROM locations WHERE search_query=$1`, [eventsData])
-    .then(sqlResult => {
-      if(sqlResult.rowCount === 0){
-        superagent.get(url)
-          .then(result => {
-            result.body.events.map(event => eventArr.push(new Event(event)));
-            response.send(eventArr);
-          })
-      } else {
-        const locationId = sqlResult.rows[0].id;
-        client.query(`SELECT * FROM events WHERE location_id=$1`, [locationId])
-          .then(eventResult => {
-            if(eventResult.rowCount === 0){
-              //Get the data from API
-              console.log('getting new data from API')
-              superagent.get(url)
-                .then( result => {
-                  // console.log(result.body.events);
-                  result.body.events.map(events => eventArr.push(new Event(events)));
-                  eventArr.forEach(value => {
-                    client.query(
-                      `INSERT INTO events (
-                      link,
-                      name,
-                      event_date,
-                      summary,
-                      location_id
-                      ) VALUES ($1, $2, $3, $4, $5)`,
-                      [value.link, value.name, value.event_date, value.summary, locationId]
-                    );
-                  })
-                  response.send(eventArr);
-                });
-            } else {
-              //Get data from database
-              console.log('sending from DB')
-              response.send(sqlResult.rows[0]);
-            }
-          });
-      }
-    }).catch(e => {
-      errors(response, e, eventsData);
-    });
+  clientQuery(eventsData, eventDbSelect, url, eventArr, queryFunc, eventMapper, eventClientQuery, Event, response, 'rows');
 }
 
 // function searchToHikes(request, response){
