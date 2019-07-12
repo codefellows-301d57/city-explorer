@@ -1,8 +1,8 @@
 # City Explorer
 
-**Author**: Nicholas, Sapana, and Roman
+**Author**: Nicholas and Manish
 
-**Version**: 1.1.0
+**Version**: 1.3.1
 
 ## Overview
 This application allows a user to search a specific location and retrieve a map, weather, events, movies, and yelp reviews from that location based on the locations latitude and longitude.
@@ -11,8 +11,8 @@ This application allows a user to search a specific location and retrieve a map,
 Git clone and npm install for the application dependencies.
 
 ## Architecture
-Tehcnologies: JavaScript, Node.js, Express, dotenv, CORS, GitHub, Heroku, Postman
-APIs: Google Maps Geocode, Dark Sky, and Eventbrite
+Tehcnologies: JavaScript, Node.js, express, dotenv, CORS, Superagent, PostgreSQL, Postman, GitHub, and Heroku
+APIs: Google Maps Geocode, Dark Sky, Eventbrite, Movie, Yelp, and Hiking Project
 
 ## Change Log
 ### Lab-06 - 09 July 2019
@@ -88,7 +88,37 @@ APIs: Google Maps Geocode, Dark Sky, and Eventbrite
 * Finish time: 01:50pm
 * Actual time needed to complete: 10 min
 
+### Lab-09 - 12 July 2019
+#### Feature 1 
+* Number and name of feature: Movies
+* Estimate of time needed to complete: ____
+* Start time: ____
+* Finish time: ____
+* Actual time needed to complete: ____
+
+#### Feature 2 
+* Number and name of feature: Yelp
+* Estimate of time needed to complete: ____
+* Start time: ____
+* Finish time: ____
+* Actual time needed to complete: ____
+
+#### Feature 3
+* Number and name of feature: Cache Validation
+* Estimate of time needed to complete: ____
+* Start time: ____
+* Finish time: ____
+* Actual time needed to complete: ____
+
+#### Feature 4
+* Number and name of feature: Trails
+* Estimate of time needed to complete: ____
+* Start time: ____
+* Finish time: ____
+* Actual time needed to complete: ____
+
 ## Credits and Collaborations 
 * Day 1: Nicholas Paro & Nhu Trinh
 * Day 2: Nicholas Paro & Promila Tamang - additional credit for Trevor Dobson and Nhu Trinh
-* Day 3: Nicholas Paro, Roman Gebrehiwot, & Sapana Poudel - additional credit for Nhu Trinh, Promila Tamang, Trevor Dobson, Peter Lee, Jackie Ly, Manish KC, Kevin Couture, Fabian Brooks, Renee Messick 
+* Day 3: Nicholas Paro, Roman Gebrehiwot, & Sapana Poudel - additional credit for Nhu Trinh, Promila Tamang, Trevor Dobson, Peter Lee, Jackie Ly, Manish KC, Kevin Couture, Fabian Brooks, and Renee Messick
+* Day 4: Nicholas Paro, Manish KC - additional credit for Nhu Trinh, Promila Tamang, Trevor Dobson, Peter Lee, Jackie Ly, Manish KC, Kevin Couture, Fabian Brooks, and Renee Messick

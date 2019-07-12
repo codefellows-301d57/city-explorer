@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS weathers;
 DROP TABLE IF EXISTS events;
+DROP TABLE IF EXISTS hikes;
 DROP TABLE IF EXISTS locations;
 
 CREATE TABLE locations (
@@ -18,13 +19,28 @@ CREATE TABLE weathers (
   FOREIGN KEY (location_id) REFERENCES locations (id)
 );
 
--- TODO: create events table
 CREATE TABLE events (
   id SERIAL PRIMARY KEY,
   link TEXT,
   name TEXT,
   event_date TEXT,
   summary TEXT,
+  location_id INTEGER NOT NULL,
+  FOREIGN KEY (location_id) REFERENCES locations (id)
+);
+
+CREATE TABLE hikes (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255),
+  location VARCHAR(255),
+  trail_length FLOAT,
+  stars FLOAT,
+  star_votes INTEGER,
+  summary TEXT,
+  trail_url TEXT,
+  conditions VARCHAR(255),
+  condition_date VARCHAR(255),
+  condition_time VARCHAR(255),
   location_id INTEGER NOT NULL,
   FOREIGN KEY (location_id) REFERENCES locations (id)
 );
