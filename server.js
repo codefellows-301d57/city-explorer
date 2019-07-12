@@ -22,12 +22,21 @@ app.use(cors());
 // app.get('/location', <function-reference>) is a route
 app.get('/location', searchToLatLng);
 app.get('/weather', searchToWeather);
+app.get('/yelp', searchToYelp);
 app.get('/events', searchToEvents);
+app.get('/movies', searchToMovies);
 app.get('/trails', searchToHikes);
 app.use('*', (request, response) => response.send('you got to the wrong place'));
 
 //DB creators
 const locationDbSelect = `SELECT * FROM locations WHERE search_query=$1`;
+const weatherDbSelect = `SELECT * FROM weathers WHERE location_id=$1`;
+const yelpDbSelect = `SELECT * FROM yelp WHERE location_id=$1`;
+const eventDbSelect = `SELECT * FROM events WHERE location_id=$1`;
+const movieDbSelect = `SELECT * FROM movies WHERE location_id=$1`;
+const hikeDbSelect = `SELECT * FROM hikes WHERE location_id=$1`;
+
+//Table Client Query
 function locationClientQuery(location, response){
   client.query(
     `INSERT INTO locations (
@@ -41,25 +50,33 @@ function locationClientQuery(location, response){
   response.send(location);
 }
 
-const weatherDbSelect = `SELECT * FROM weathers WHERE location_id=$1`;
-function weatherMapper(result){
-  return result.body.daily.data;
-}
 function weatherClientQuery(value, locationId){
   client.query(
     `INSERT INTO weathers (
       forecast,
       time,
+      previous_search,
       location_id
-    ) VALUES ($1, $2, $3)`,
+    ) VALUES ($1, $2, $3, $4)`,
     [value.forecast, value.time, locationId]
   );
 }
 
-const eventDbSelect = `SELECT * FROM events WHERE location_id=$1`;
-function eventMapper(result){
-  return result.body.events;
+function yelpClientQuery(value, locationId){
+  client.query(
+    `INSERT INTO yelp (
+      name,
+      image_url,
+      price,
+      rating,
+      url,
+      previous_search,
+      location_id
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+    [value.name, value.image_url, value.price, value.rating, value.url, locationId]
+  );
 }
+
 function eventClientQuery(value, locationId){
   client.query(
     `INSERT INTO events (
@@ -67,16 +84,30 @@ function eventClientQuery(value, locationId){
       name,
       event_date,
       summary,
+      previous_search,
       location_id
-    ) VALUES ($1, $2, $3, $4, $5)`,
+    ) VALUES ($1, $2, $3, $4, $5, $6)`,
     [value.link, value.name, value.event_date, value.summary, locationId]
   );
 }
 
-const hikeDbSelect = `SELECT * FROM hikes WHERE location_id=$1`;
-function hikeMapper(result){
-  return result.body.trails;
+function movieClientQuery(value, locationId){
+  client.query(
+    `INSERT INTO movies (
+      title,
+      overview,
+      average_votes,
+      total_votes,
+      image_url,
+      popularity,
+      released_on,
+      previous_search,
+      location_id
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+    [value.title, value.overview, value.average_votes, value.total_votes, value.image_url, value.popularity, value.released_on, locationId]
+  );
 }
+
 function hikeClientQuery(value, locationId){
   client.query(
     `INSERT INTO hikes (
@@ -90,10 +121,32 @@ function hikeClientQuery(value, locationId){
       conditions,
       condition_date,
       condition_time,
+      previous_search,
       location_id
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
     [value.name, value.location, value.trail_length, value.stars, value.star_votes, value.summary, value.trail_url, value.conditions, value.condition_date, value.condition_time, locationId]
   );
+}
+
+//Path Mapper
+function weatherPathMapper(result){
+  return result.body.daily.data;
+}
+
+function yelpPathMapper(result){
+  return result.body.businesses;
+}
+
+function eventPathMapper(result){
+  return result.body.events;
+}
+
+function moviePathMapper(result){
+  return result.body.results;
+}
+
+function hikePathMapper(result){
+  return result.body.trails;
 }
 
 // Constructors
@@ -104,18 +157,34 @@ function Location(query, result){
   this.longitude = result.body.results[0].geometry.location.lng;
 }
 
-function Weather(weatherData){
-  const time = new Date(weatherData.time * 1000).toDateString();
-  this.forecast = weatherData.summary;
-  this.time = time;
+function Weather(weather){
+  this.forecast = weather.summary;
+  this.time = new Date(weather.time * 1000).toDateString();
+}
+
+function Yelp(yelp){
+  this.name = yelp.name;
+  this.image_url = yelp.image_url;
+  this.price = yelp.price;
+  this.rating = yelp.rating;
+  this.url = yelp.url;
 }
 
 function Event(event){
-  const date = new Date(event.start.local).toDateString();
   this.link = event.url;
   this.name = event.name.text;
-  this.event_date = date;
+  this.event_date = new Date(event.start.local).toDateString();
   this.summary = event.description.text;
+}
+
+function Movie(movie){
+  this.title = movie.title;
+  this.overview = movie.overview;
+  this.average_votes = movie.vote_average;
+  this.total_votes = movie.vote_count;
+  this.image_url = `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
+  this.popularity = movie.popularity;
+  this.released_on = movie.release_date;
 }
 
 function Hike(hike){
@@ -132,24 +201,24 @@ function Hike(hike){
 }
 
 //Query Functions
-function clientQuery(requestData, dbToSelect, url, arr, querier, mapper, internalQuery, Obj, response, rower){
+function clientQuery(requestData, dbToSelect, url, arr, queryFunction, pathMapper, tableClientQuery, Obj, response, rower, authVar){
   client.query(`SELECT * FROM locations WHERE search_query=$1`, [requestData])
     .then(sqlResult => {
       const locationId = sqlResult.rows[0].id;
-      querySpecifiedTable(dbToSelect, locationId, Obj, rower, url, querier, response, mapper, arr, internalQuery);
+      querySpecifiedTable(dbToSelect, locationId, Obj, rower, url, queryFunction, response, pathMapper, arr, tableClientQuery, authVar);
     }).catch(e => {
       errors(response, e, requestData);
     });
 }
 
-function querySpecifiedTable(dbToSelect, locationId, Obj, rower, url, querier, response, mapper, arr, internalQuery){
+function querySpecifiedTable(dbToSelect, locationId, Obj, rower, url, queryFunction, response, pathMapper, arr, tableClientQuery, authVar=''){
   client.query(dbToSelect, [locationId])
     .then(res => {
       if(res.rowCount === 0){
-        console.log('getting the data from API');
-        superagent.get(url)
+        console.log('getting the data from API', url);
+        superagent.get(url).set('Authorization', authVar)
           .then(result => {
-            querier(result, Obj, response, mapper, arr, locationId, internalQuery);
+            queryFunction(result, Obj, response, pathMapper, arr, locationId, tableClientQuery);
           })
       } else {
         console.log('sending the data from DB');
@@ -158,8 +227,8 @@ function querySpecifiedTable(dbToSelect, locationId, Obj, rower, url, querier, r
     })
 }
 
-function queryFunc(result, Obj, response, mapper, arr, locationId, querier){
-  mapper(result).map(finalRes => arr.push(new Obj(finalRes)));
+function queryFunc(result, Obj, response, pathMapper, arr, locationId, querier){
+  pathMapper(result).map(finalRes => arr.push(new Obj(finalRes)));
   arr.forEach(value => {
     querier(value, locationId)
   })
@@ -194,9 +263,19 @@ function searchToLatLng(request, response){
 function searchToWeather(request, response){
   const locationName = request.query.data;
   const weatherData = request.query.data.search_query;
+  const date = new Date();
+  console.log(date);
   const url = `https://api.darksky.net/forecast/${process.env.WEATHER_API_KEY}/${locationName.latitude},${locationName.longitude}`;
   const weatherArr = [];
-  clientQuery(weatherData, weatherDbSelect, url, weatherArr, queryFunc, weatherMapper, weatherClientQuery, Weather, response, 'rows');
+  clientQuery(weatherData, weatherDbSelect, url, weatherArr, queryFunc, weatherPathMapper, weatherClientQuery, Weather, response, 'rows');
+}
+
+function searchToYelp(request, response){
+  const locationName = request.query.data;
+  const yelpData = request.query.data.search_query;
+  const url = `https://api.yelp.com/v3/businesses/search?term=delis&latitude=${locationName.latitude}&longitude=${locationName.longitude}`;
+  const yelpArr = [];
+  clientQuery(yelpData, yelpDbSelect, url, yelpArr, queryFunc, yelpPathMapper, yelpClientQuery, Yelp, response, 'rows', `Bearer ${process.env.YELP_API_KEY}`);
 }
 
 function searchToEvents(request, response){
@@ -204,16 +283,22 @@ function searchToEvents(request, response){
   const eventsData = request.query.data.search_query;
   const url = `https://www.eventbriteapi.com/v3/events/search/?location.latitude=${locationName.latitude}&location.longitude=${locationName.longitude}&token=${process.env.EVENTBRITE_API_KEY}`;
   const eventArr = [];
-  clientQuery(eventsData, eventDbSelect, url, eventArr, queryFunc, eventMapper, eventClientQuery, Event, response, 'rows');
+  clientQuery(eventsData, eventDbSelect, url, eventArr, queryFunc, eventPathMapper, eventClientQuery, Event, response, 'rows');
+}
+
+function searchToMovies(request, response){
+  const movieData = request.query.data.search_query;
+  const url = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.MOVIE_API_KEY}&query=${movieData}`;
+  const movieArr = [];
+  clientQuery(movieData, movieDbSelect, url, movieArr, queryFunc, moviePathMapper, movieClientQuery, Movie, response, 'rows');
 }
 
 function searchToHikes(request, response){
   const locationName = request.query.data;
   const hikesData = request.query.data.search_query;
-  // const url = `https://www.hikingproject.com/data/get-trails?lat=${locationName.latitude}&lon=${locationName.longitude}&maxDistance=10&key=${process.env.TRAIL_API_KEY}`;
   const url = `https://www.hikingproject.com/data/get-trails?lat=${locationName.latitude}&lon=${locationName.longitude}&maxDistance=10&key=${process.env.TRAIL_API_KEY}`;
   const hikesArr = [];
-  clientQuery(hikesData, hikeDbSelect, url, hikesArr, queryFunc, hikeMapper, hikeClientQuery, Hike, response, 'rows');
+  clientQuery(hikesData, hikeDbSelect, url, hikesArr, queryFunc, hikePathMapper, hikeClientQuery, Hike, response, 'rows');
 }
 
 //Error message
