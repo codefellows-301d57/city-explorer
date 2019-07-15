@@ -9,6 +9,7 @@ const pg = require('pg');
 
 // Global vars
 const PORT = process.env.PORT || 3009;
+const now = Date.now();
 
 // PostgreSQL setup
 const client = new pg.Client(process.env.DATABASE_URL);
@@ -28,9 +29,7 @@ app.get('/movies', searchToMovies);
 app.get('/trails', searchToHikes);
 app.use('*', (request, response) => response.send('you got to the wrong place'));
 
-//Date time
-
-//DB creators
+// DB creators
 const locationDbSelect = `SELECT * FROM locations WHERE search_query=$1`;
 const weatherDbSelect = `SELECT * FROM weathers WHERE location_id=$1`;
 const yelpDbSelect = `SELECT * FROM yelp WHERE location_id=$1`;
@@ -38,117 +37,10 @@ const eventDbSelect = `SELECT * FROM events WHERE location_id=$1`;
 const movieDbSelect = `SELECT * FROM movies WHERE location_id=$1`;
 const hikeDbSelect = `SELECT * FROM hikes WHERE location_id=$1`;
 
-//Table Client Query
-function locationClientQuery(location, response){
-  client.query(
-    `INSERT INTO locations (
-      search_query,
-      formatted_query,
-      latitude,
-      longitude
-    ) VALUES ($1, $2, $3, $4)`,
-    [location.search_query, location.formatted_query, location.latitude, location.longitude]
-  );
-  response.send(location);
-}
-
-function weatherClientQuery(value, date, locationId){
-  client.query(
-    `INSERT INTO weathers (
-      forecast,
-      time,
-      created_at,
-      location_id
-    ) VALUES ($1, $2, $3, $4)`,
-    [value.forecast, value.time, date, locationId]
-  );
-}
-
-function yelpClientQuery(value, date, locationId){
-  client.query(
-    `INSERT INTO yelp (
-      name,
-      image_url,
-      price,
-      rating,
-      url,
-      created_at,
-      location_id
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-    [value.name, value.image_url, value.price, value.rating, value.url, date, locationId]
-  );
-}
-
-function eventClientQuery(value, date, locationId){
-  client.query(
-    `INSERT INTO events (
-      link,
-      name,
-      event_date,
-      summary,
-      created_at,
-      location_id
-    ) VALUES ($1, $2, $3, $4, $5, $6)`,
-    [value.link, value.name, value.event_date, value.summary, date, locationId]
-  );
-}
-
-function movieClientQuery(value, date, locationId){
-  client.query(
-    `INSERT INTO movies (
-      title,
-      overview,
-      average_votes,
-      total_votes,
-      image_url,
-      popularity,
-      released_on,
-      created_at,
-      location_id
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-    [value.title, value.overview, value.average_votes, value.total_votes, value.image_url, value.popularity, value.released_on, date, locationId]
-  );
-}
-
-function hikeClientQuery(value, date, locationId){
-  client.query(
-    `INSERT INTO hikes (
-      name,
-      location,
-      trail_length,
-      stars,
-      star_votes,
-      summary,
-      trail_url,
-      conditions,
-      condition_date,
-      condition_time,
-      created_at,
-      location_id
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
-    [value.name, value.location, value.trail_length, value.stars, value.star_votes, value.summary, value.trail_url, value.conditions, value.condition_date, value.condition_time, date, locationId]
-  );
-}
-
-//Path Mapper
-function weatherPathMapper(result){
-  return result.body.daily.data;
-}
-
-function yelpPathMapper(result){
-  return result.body.businesses;
-}
-
-function eventPathMapper(result){
-  return result.body.events;
-}
-
-function moviePathMapper(result){
-  return result.body.results;
-}
-
-function hikePathMapper(result){
-  return result.body.trails;
+// Error message
+const errors = (response, e, location) => {
+  console.error(e);
+  response.status(500).send(`Status 500: Sorry, something went wrong when getting the data for ${location.formatted_query}`);
 }
 
 // Constructors
@@ -202,29 +94,121 @@ function Hike(hike){
   this.condition_time = hike.conditionDate.substring(12, 20);
 }
 
-//Query Functions
-function clientQuery(requestData, dbToSelect, url, arr, queryFunction, pathMapper, tableClientQuery, Obj, response, rower, tableQueried, time, authVar){
+// Table Client Query
+function locationClientQuery(location, response){
+  client.query(
+    `INSERT INTO locations (
+      search_query,
+      formatted_query,
+      latitude,
+      longitude
+    ) VALUES ($1, $2, $3, $4)`,
+    [location.search_query, location.formatted_query, location.latitude, location.longitude]
+  );
+  response.send(location);
+}
+
+function weatherClientQuery(value, time, locationId){
+  client.query(
+    `INSERT INTO weathers (
+      forecast,
+      time,
+      created_at,
+      location_id
+    ) VALUES ($1, $2, $3, $4)`,
+    [value.forecast, value.time, time, locationId]
+  );
+}
+
+function yelpClientQuery(value, time, locationId){
+  client.query(
+    `INSERT INTO yelp (
+      name,
+      image_url,
+      price,
+      rating,
+      url,
+      created_at,
+      location_id
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+    [value.name, value.image_url, value.price, value.rating, value.url, time, locationId]
+  );
+}
+
+function eventClientQuery(value, time, locationId){
+  client.query(
+    `INSERT INTO events (
+      link,
+      name,
+      event_date,
+      summary,
+      created_at,
+      location_id
+    ) VALUES ($1, $2, $3, $4, $5, $6)`,
+    [value.link, value.name, value.event_date, value.summary, time, locationId]
+  );
+}
+
+function movieClientQuery(value, time, locationId){
+  client.query(
+    `INSERT INTO movies (
+      title,
+      overview,
+      average_votes,
+      total_votes,
+      image_url,
+      popularity,
+      released_on,
+      created_at,
+      location_id
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+    [value.title, value.overview, value.average_votes, value.total_votes, value.image_url, value.popularity, value.released_on, time, locationId]
+  );
+}
+
+function hikeClientQuery(value, time, locationId){
+  client.query(
+    `INSERT INTO hikes (
+      name,
+      location,
+      trail_length,
+      stars,
+      star_votes,
+      summary,
+      trail_url,
+      conditions,
+      condition_date,
+      condition_time,
+      created_at,
+      location_id
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+    [value.name, value.location, value.trail_length, value.stars, value.star_votes, value.summary, value.trail_url, value.conditions, value.condition_date, value.condition_time, time, locationId]
+  );
+}
+
+// Query Functions
+function clientQuery(requestData, dbToSelect, url, arr, pathMapper, tableClientQuery, Obj, response, rower, tableQueried, time, authVar){
   client.query(`SELECT * FROM locations WHERE search_query=$1`, [requestData])
     .then(sqlResult => {
       const locationId = sqlResult.rows[0].id;
-      querySpecifiedTable(dbToSelect, locationId, Obj, rower, url, queryFunction, response, pathMapper, arr, tableClientQuery, tableQueried, time, authVar);
+      querySpecifiedTable(dbToSelect, locationId, Obj, rower, url, response, pathMapper, arr, tableClientQuery, tableQueried, time, authVar);
     }).catch(e => {
       errors(response, e, requestData);
     });
 }
 
-function querySpecifiedTable(dbToSelect, locationId, Obj, rower, url, queryFunction, response, pathMapper, arr, tableClientQuery, tableQueried, time, authVar=''){
+function querySpecifiedTable(dbToSelect, locationId, Obj, rower, url, response, pathMapper, arr, tableClientQuery, tableQueried, time, authVar=''){
   client.query(dbToSelect, [locationId])
     .then(res => {
       timeQuery(tableQueried, locationId);
       if(res.rowCount === 0){
-        console.log('getting the data from API', url);
+        console.log(`getting data from ${tableQueried} API`);
         superagent.get(url).set('Authorization', authVar)
           .then(result => {
-            queryFunction(result, Obj, response, pathMapper, arr, locationId, tableClientQuery, time);
+            queryFunc(result, Obj, response, pathMapper, arr, locationId, tableClientQuery, time);
           })
       } else {
-        console.log(`sending the data from ${tableQueried} DB`);
+        console.log(`sending data from ${tableQueried} DB`);
         response.send(res[rower]);
       }
     })
@@ -233,10 +217,10 @@ function querySpecifiedTable(dbToSelect, locationId, Obj, rower, url, queryFunct
 function timeQuery(tableQueried, locationId){
   client.query(`SELECT created_at FROM ${tableQueried} WHERE location_id=${locationId}`)
     .then(res => {
-      let nowFromDb;
+      // let nowFromDb;
       const currentTime = Date.now();
       if(res.rows.length !== 0){
-        nowFromDb = parseInt(Object.values(res.rows[0]));
+        let nowFromDb = parseInt(Object.values(res.rows[0]));
         let timeDifference = currentTime - nowFromDb;
         timeDifference = timeDifference / 60000;
         if(timeDifference > 1){
@@ -247,32 +231,31 @@ function timeQuery(tableQueried, locationId){
     })
 }
 
-function queryFunc(result, Obj, response, pathMapper, arr, locationId, querier, time){
+function queryFunc(result, Obj, response, pathMapper, arr, locationId, tableClientQuery, time){
   pathMapper(result).map(finalRes => arr.push(new Obj(finalRes)));
   arr.forEach(value => {
-    querier(value, time, locationId)
+    tableClientQuery(value, time, locationId)
   })
   response.send(arr);
 }
 
 // Response builders
 function searchToLatLng(request, response){
+  console.log('\n************************************')
   const locationName = request.query.data;
   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${locationName}&key=${process.env.GEOCODE_API_KEY}`;
 
   client.query(locationDbSelect, [locationName])
     .then(sqlResult => {
       if(sqlResult.rowCount === 0){
-        //Get the location data from API
-        console.log('getting the location data from API')
+        console.log('getting location date from API')
         superagent.get(url)
           .then( result => {
             const location = new Location(locationName, result);
             locationClientQuery(location, response);
           })
       } else {
-        //Get the location data from DB
-        console.log('sending the location data from DB')
+        console.log('sending location data from DB')
         response.send(sqlResult.rows[0]);
       }
     }).catch(e => {
@@ -281,53 +264,47 @@ function searchToLatLng(request, response){
 }
 
 function searchToWeather(request, response){
-  const now = Date.now();
-  const locationName = request.query.data;
-  const weatherData = request.query.data.search_query;
-  const url = `https://api.darksky.net/forecast/${process.env.WEATHER_API_KEY}/${locationName.latitude},${locationName.longitude}`;
+  const weatherData = request.query.data;
+  const locationName = request.query.data.search_query;
+  const url = `https://api.darksky.net/forecast/${process.env.WEATHER_API_KEY}/${weatherData.latitude},${weatherData.longitude}`;
   const weatherArr = [];
-  clientQuery(weatherData, weatherDbSelect, url, weatherArr, queryFunc, weatherPathMapper, weatherClientQuery, Weather, response, 'rows', 'weathers', now);
+  const weatherPathMapper = result => result.body.daily.data;
+  clientQuery(locationName, weatherDbSelect, url, weatherArr, weatherPathMapper, weatherClientQuery, Weather, response, 'rows', 'weathers', now);
 }
 
 function searchToYelp(request, response){
-  const now = Date.now();
-  const locationName = request.query.data;
-  const yelpData = request.query.data.search_query;
-  const url = `https://api.yelp.com/v3/businesses/search?latitude=${locationName.latitude}&longitude=${locationName.longitude}`;
+  const yelpData = request.query.data;
+  const locationName = request.query.data.search_query;
+  const url = `https://api.yelp.com/v3/businesses/search?latitude=${yelpData.latitude}&longitude=${yelpData.longitude}`;
   const yelpArr = [];
-  clientQuery(yelpData, yelpDbSelect, url, yelpArr, queryFunc, yelpPathMapper, yelpClientQuery, Yelp, response, 'rows', 'yelp', now, `Bearer ${process.env.YELP_API_KEY}`);
+  const yelpPathMapper = result => result.body.businesses;
+  clientQuery(locationName, yelpDbSelect, url, yelpArr, yelpPathMapper, yelpClientQuery, Yelp, response, 'rows', 'yelp', now, `Bearer ${process.env.YELP_API_KEY}`);
 }
 
 function searchToEvents(request, response){
-  const now = Date.now();
-  const locationName = request.query.data;
-  const eventsData = request.query.data.search_query;
-  const url = `https://www.eventbriteapi.com/v3/events/search/?location.latitude=${locationName.latitude}&location.longitude=${locationName.longitude}&token=${process.env.EVENTBRITE_API_KEY}`;
+  const eventsData = request.query.data;
+  const locationName = request.query.data.search_query;
+  const url = `https://www.eventbriteapi.com/v3/events/search/?location.latitude=${eventsData.latitude}&location.longitude=${eventsData.longitude}&token=${process.env.EVENTBRITE_API_KEY}`;
   const eventArr = [];
-  clientQuery(eventsData, eventDbSelect, url, eventArr, queryFunc, eventPathMapper, eventClientQuery, Event, response, 'rows', 'events', now);
+  const eventPathMapper = result => result.body.events;
+  clientQuery(locationName, eventDbSelect, url, eventArr, eventPathMapper, eventClientQuery, Event, response, 'rows', 'events', now);
 }
 
 function searchToMovies(request, response){
-  const now = Date.now();
-  const movieData = request.query.data.search_query;
-  const url = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.MOVIE_API_KEY}&query=${movieData}`;
+  const locationName = request.query.data.search_query;
+  const url = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.MOVIE_API_KEY}&query=${locationName}`;
   const movieArr = [];
-  clientQuery(movieData, movieDbSelect, url, movieArr, queryFunc, moviePathMapper, movieClientQuery, Movie, response, 'rows', 'movies', now);
+  const moviePathMapper = result => result.body.results;
+  clientQuery(locationName, movieDbSelect, url, movieArr, moviePathMapper, movieClientQuery, Movie, response, 'rows', 'movies', now);
 }
 
 function searchToHikes(request, response){
-  const now = Date.now();
-  const locationName = request.query.data;
-  const hikesData = request.query.data.search_query;
-  const url = `https://www.hikingproject.com/data/get-trails?lat=${locationName.latitude}&lon=${locationName.longitude}&maxDistance=10&key=${process.env.TRAIL_API_KEY}`;
+  const hikesData = request.query.data;
+  const locationName = request.query.data.search_query;
+  const url = `https://www.hikingproject.com/data/get-trails?lat=${hikesData.latitude}&lon=${hikesData.longitude}&maxDistance=10&key=${process.env.TRAIL_API_KEY}`;
   const hikesArr = [];
-  clientQuery(hikesData, hikeDbSelect, url, hikesArr, queryFunc, hikePathMapper, hikeClientQuery, Hike, response, 'rows', 'hikes', now);
-}
-
-//Error message
-const errors = (response, e, location) => {
-  console.error(e);
-  response.status(500).send(`Status 500: Sorry, something went wrong when getting the data for ${location.formatted_query}`);
+  const hikePathMapper = result => result.body.trails;
+  clientQuery(locationName, hikeDbSelect, url, hikesArr, hikePathMapper, hikeClientQuery, Hike, response, 'rows', 'hikes', now);
 }
 
 // Start the server
