@@ -9,7 +9,6 @@ const pg = require('pg');
 
 // Global vars
 const PORT = process.env.PORT || 3009;
-const now = Date.now();
 
 // PostgreSQL setup
 const client = new pg.Client(process.env.DATABASE_URL);
@@ -194,6 +193,7 @@ function searchToLatLng(request, response){
 }
 
 function searchToWeather(request, response){
+  const now = Date.now();
   const weatherData = request.query.data;
   const locationName = request.query.data.search_query;
   const url = `https://api.darksky.net/forecast/${process.env.WEATHER_API_KEY}/${weatherData.latitude},${weatherData.longitude}`;
@@ -203,6 +203,7 @@ function searchToWeather(request, response){
 }
 
 function searchToYelp(request, response){
+  const now = Date.now();
   const yelpData = request.query.data;
   const locationName = request.query.data.search_query;
   const url = `https://api.yelp.com/v3/businesses/search?latitude=${yelpData.latitude}&longitude=${yelpData.longitude}`;
@@ -212,6 +213,7 @@ function searchToYelp(request, response){
 }
 
 function searchToEvents(request, response){
+  const now = Date.now();
   const eventsData = request.query.data;
   const locationName = request.query.data.search_query;
   const url = `https://www.eventbriteapi.com/v3/events/search/?location.latitude=${eventsData.latitude}&location.longitude=${eventsData.longitude}&token=${process.env.EVENTBRITE_API_KEY}`;
@@ -221,6 +223,7 @@ function searchToEvents(request, response){
 }
 
 function searchToMovies(request, response){
+  const now = Date.now();
   const locationName = request.query.data.search_query;
   const url = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.MOVIE_API_KEY}&query=${locationName}`;
   const movieArr = [];
@@ -229,6 +232,7 @@ function searchToMovies(request, response){
 }
 
 function searchToHikes(request, response){
+  const now = Date.now();
   const hikesData = request.query.data;
   const locationName = request.query.data.search_query;
   const url = `https://www.hikingproject.com/data/get-trails?lat=${hikesData.latitude}&lon=${hikesData.longitude}&maxDistance=10&key=${process.env.TRAIL_API_KEY}`;
